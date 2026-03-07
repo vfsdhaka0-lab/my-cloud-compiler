@@ -1,53 +1,28 @@
 name: Cloud APK Builder
-
-on: 
+on:
   workflow_dispatch:
-
   jobs:
     build:
         runs-on: ubuntu-latest
-
             steps:
-                  # 1. Pull the latest code
-                        - name: Checkout Code
-                                uses: actions/checkout@v4
-
-                                      # 2. Set up Java (Required for Gradle)
-                                            - name: Setup Java
-                                                    uses: actions/setup-java@v4
-                                                            with:
-                                                                      distribution: 'zulu'
-                                                                                java-version: '17'
-
-                                                                                      # 3. Set up Flutter
-                                                                                            - name: Setup Flutter
-                                                                                                    uses: subosito/flutter-action@v2
-                                                                                                            with:
-                                                                                                                      channel: 'stable'
-
-                                                                                                                            # 4. Debug: Check if files actually exist after the IDE push
-                                                                                                                                  - name: Verify Files
-                                                                                                                                          run: |
-                                                                                                                                                    echo "Checking for main.dart..."
-                                                                                                                                                              ls -l lib/main.dart
-                                                                                                                                                                        echo "Checking pubspec.yaml..."
-                                                                                                                                                                                  cat pubspec.yaml
-
-                                                                                                                                                                                        # 5. Get dependencies
-                                                                                                                                                                                              - name: Install Dependencies
-                                                                                                                                                                                                      run: flutter pub get
-
-                                                                                                                                                                                                            # 6. Build the APK
-                                                                                                                                                                                                                  # Added --verbose to see exactly where it fails if it does
-                                                                                                                                                                                                                        - name: Build APK
-                                                                                                                                                                                                                                run: flutter build apk --release --verbose
-
-                                                                                                                                                                                                                                      # 7. Upload the Artifact
-                                                                                                                                                                                                                                            # We use a wildcard path to ensure we catch the APK regardless of flavor
-                                                                                                                                                                                                                                                  - name: Upload APK Artifact
-                                                                                                                                                                                                                                                          uses: actions/upload-artifact@v4
-                                                                                                                                                                                                                                                                  with:
-                                                                                                                                                                                                                                                                            name: Cloud-IDE-Build
-                                                                                                                                                                                                                                                                                      path: build/app/outputs/flutter-apk/*.apk
-                                                                                                                                                                                                                                                                                                if-no-files-found: error # This will force the build to show as "Failed" if no APK is found
-                                                                                                                                                                                                                                                                                                
+                  - name: Checkout Code
+                          uses: actions/checkout@v4
+                                - name: Setup Java
+                                        uses: actions/setup-java@v4
+                                                with:
+                                                          distribution: 'zulu'
+                                                                    java-version: '17'
+                                                                          - name: Setup Flutter
+                                                                                  uses: subosito/flutter-action@v2
+                                                                                          with:
+                                                                                                    channel: 'stable'
+                                                                                                          - name: Install Dependencies
+                                                                                                                  run: flutter pub get
+                                                                                                                        - name: Build APK
+                                                                                                                                run: flutter build apk --release
+                                                                                                                                      - name: Upload APK
+                                                                                                                                              uses: actions/upload-artifact@v4
+                                                                                                                                                      with:
+                                                                                                                                                                name: Cloud-IDE-Build
+                                                                                                                                                                          path: build/app/outputs/flutter-apk/*.apk
+                                                                                                                                                                          
