@@ -6,13 +6,11 @@ jobs:
   apk:
     runs-on: ubuntu-latest
     steps:
-      - name: 1. Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: main
-          fetch-depth: 1
 
-      - name: 2. Setup Flutter & Java
+      - name: 1. Setup Environment
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
@@ -21,27 +19,41 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: 3. Infrastructure Setup
+      - name: 2. Inject Code & Icon
         run: |
-          # Create a temp folder to hold your custom code safely
-          mkdir -p temp_code
-          cp lib/main.dart temp_code/main.dart
-          cp pubspec.yaml temp_code/pubspec.yaml
+          # Backup your uploaded data
+          mkdir -p backup
+          cp lib/main.dart backup/
+          cp pubspec.yaml backup/
+          [ -f assets/icon.png ] && cp assets/icon.png backup/ || echo "No icon"
 
-          # WIPE and Recreate fresh project structure
+          # Create a clean project to ensure no "Counter App" remnants
           rm -rf android lib pubspec.yaml
           flutter create . --org com.royal --project-name my_cloud_compiler --platforms android --overwrite
           
-          # OVERWRITE the default counter app with YOUR custom code
-          cp temp_code/main.dart lib/main.dart
-          cp temp_code/pubspec.yaml pubspec.yaml
+          # Restore your code
+          cp backup/main.dart lib/main.dart
+          cp backup/pubspec.yaml pubspec.yaml
+          
+          # Handle Icon Generation
+          if [ -f backup/icon.png ]; then
+            mkdir -p assets
+            cp backup/icon.png assets/icon.png
+            flutter pub add --dev flutter_launcher_icons
+            cat <<EOF > flutter_launcher_icons.yaml
+            flutter_launcher_icons:
+              android: true
+              image_path: "assets/icon.png"
+          EOF
+            dart run flutter_launcher_icons
+          fi
           
           flutter pub get
 
-      - name: 4. Build
+      - name: 3. Final Build
         run: flutter build apk --release
 
-      - name: 5. Upload
+      - name: 4. Upload
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
