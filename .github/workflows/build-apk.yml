@@ -1,7 +1,6 @@
 name: build
 on:
   workflow_dispatch:
-
 jobs:
   apk:
     runs-on: ubuntu-latest
@@ -9,8 +8,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-
-      - name: 1. Setup Environment
+      - name: Setup
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
@@ -18,42 +16,28 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-
-      - name: 2. Inject Code & Icon
+      - name: Inject & Build
         run: |
-          # Backup your uploaded data
           mkdir -p backup
           cp lib/main.dart backup/
           cp pubspec.yaml backup/
           [ -f assets/icon.png ] && cp assets/icon.png backup/ || echo "No icon"
-
-          # Create a clean project to ensure no "Counter App" remnants
           rm -rf android lib pubspec.yaml
           flutter create . --org com.royal --project-name my_cloud_compiler --platforms android --overwrite
-          
-          # Restore your code
           cp backup/main.dart lib/main.dart
           cp backup/pubspec.yaml pubspec.yaml
-          
-          # Handle Icon Generation
           if [ -f backup/icon.png ]; then
             mkdir -p assets
             cp backup/icon.png assets/icon.png
             flutter pub add --dev flutter_launcher_icons
-            cat <<EOF > flutter_launcher_icons.yaml
-            flutter_launcher_icons:
-              android: true
-              image_path: "assets/icon.png"
-          EOF
+            echo "flutter_launcher_icons:" > flutter_launcher_icons.yaml
+            echo "  android: true" >> flutter_launcher_icons.yaml
+            echo "  image_path: \"assets/icon.png\"" >> flutter_launcher_icons.yaml
             dart run flutter_launcher_icons
           fi
-          
           flutter pub get
-
-      - name: 3. Final Build
-        run: flutter build apk --release
-
-      - name: 4. Upload
+          flutter build apk --release
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
