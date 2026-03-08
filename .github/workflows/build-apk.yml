@@ -5,23 +5,34 @@ jobs:
   apk:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Java
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
-      - uses: subosito/flutter-action@v2
+      - name: Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           
-      - name: Repair and Build
+      - name: CLEAN_REPAIR_BUILD
         run: |
-          # This command regenerates the missing gradlew and project structure
-          flutter create . --platforms android --overwrite
+          # 1. Clean up any existing broken files
+          rm -rf android .gitignore pubspec.yaml
+          
+          # 2. Recreate the project perfectly with YOUR package name
+          # Change "com.royal.event" below if you want a different default
+          flutter create . --org com.royal --project-name my_cloud_compiler --platforms android --overwrite
+          
+          # 3. Pull your custom code (main.dart) into the fresh project
+          # Note: The 'checkout' step already pulled your latest 'lib/main.dart'
+          
           flutter pub get
           flutter build apk --release
           
-      - name: Upload Artifact
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
