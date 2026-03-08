@@ -1,6 +1,4 @@
 name: my_cloud_compiler
-description: A cloud built app
-publish_to: 'none'
 environment:
   sdk: '>=3.11.0 <4.0.0'
 dependencies:
