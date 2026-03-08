@@ -6,40 +6,38 @@ jobs:
   apk:
     runs-on: ubuntu-latest
     steps:
-      - name: 1. Checkout Code
+      - name: 1. Force Checkout Latest
         uses: actions/checkout@v4
+        with:
+          # This ensures we don't build the old cached "Demo" code
+          ref: main
+          fetch-depth: 1
 
-      - name: 2. Setup Java 17
+      - name: 2. Setup Environment
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
-
-      - name: 3. Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
 
-      - name: 4. Clean and Repair Project
-        # This step fixes the "Task not found" and "flutterRoot" errors
+      - name: 3. Clean and Repair Project
         run: |
-          # Remove any existing broken android files
-          rm -rf android .gitignore pubspec.lock
+          # Kill old folders to prevent conflict
+          rm -rf android
           
-          # Recreate the android project structure perfectly
-          # --org sets your package name (com.royal)
-          flutter create . --org com.royal --platforms android --overwrite
+          # Recreate the structure using your package identity
+          flutter create . --org com.royal --project-name my_cloud_compiler --platforms android --overwrite
           
-          # Get dependencies
+          # Restore dependencies
           flutter pub get
 
-      - name: 5. Build Release APK
-        # Added --verbose to help us see exactly what happens if it fails
-        run: flutter build apk --release --verbose
+      - name: 4. Compile APK
+        run: flutter build apk --release
 
-      - name: 6. Upload Result
+      - name: 5. Store APK
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: "build/app/outputs/flutter-apk/*.apk"
-          if-no-files-found: error
