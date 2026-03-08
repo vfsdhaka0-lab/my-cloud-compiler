@@ -6,9 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: main
-      - name: Setup Env
+      - name: Setup
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
@@ -41,11 +39,12 @@ jobs:
           fi
           
           flutter pub get
-          flutter build apk --release
+          # Dynamic versioning using GitHub Run Number
+          flutter build apk --release --build-name=1.0.0 --build-number=${{ github.run_number }}
 
       - name: Upload Direct APK
         uses: actions/upload-artifact@v7
         with:
-          name: my_app.apk
+          name: app-release.apk
           path: build/app/outputs/flutter-apk/app-release.apk
-          archive: false # 2026 Feature: No more ZIP files
+          archive: false # 2026 unzipped feature
