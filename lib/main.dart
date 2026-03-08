@@ -1,3 +1,3 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(MaterialApp(home: Scaffold(body: Center(child: Text('Build Successful!')))));
+void main() => runApp(const MaterialApp(home: Scaffold(body: Center(child: Text('Róyal Cloud Build SUCCESS')))));
