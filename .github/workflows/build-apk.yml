@@ -13,12 +13,16 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - name: Build APK
+          
+      - name: Repair and Build
         run: |
+          # This command regenerates the missing gradlew and project structure
+          flutter create . --platforms android --overwrite
           flutter pub get
           flutter build apk --release
+          
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: "**/*.apk" # Recursive search to find the file
+          path: "build/app/outputs/flutter-apk/*.apk"
