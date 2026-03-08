@@ -1,6 +1,6 @@
-name: my_cloud_compiler
+name: my_app
 environment:
-  sdk: '>=3.11.0 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 dependencies:
   flutter:
     sdk: flutter
