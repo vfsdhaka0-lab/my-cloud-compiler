@@ -6,14 +6,13 @@ jobs:
   apk:
     runs-on: ubuntu-latest
     steps:
-      - name: 1. Force Checkout Latest
+      - name: 1. Checkout
         uses: actions/checkout@v4
         with:
-          # This ensures we don't build the old cached "Demo" code
           ref: main
           fetch-depth: 1
 
-      - name: 2. Setup Environment
+      - name: 2. Setup Flutter & Java
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
@@ -22,21 +21,27 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: 3. Clean and Repair Project
+      - name: 3. Infrastructure Setup
         run: |
-          # Kill old folders to prevent conflict
-          rm -rf android
-          
-          # Recreate the structure using your package identity
+          # Create a temp folder to hold your custom code safely
+          mkdir -p temp_code
+          cp lib/main.dart temp_code/main.dart
+          cp pubspec.yaml temp_code/pubspec.yaml
+
+          # WIPE and Recreate fresh project structure
+          rm -rf android lib pubspec.yaml
           flutter create . --org com.royal --project-name my_cloud_compiler --platforms android --overwrite
           
-          # Restore dependencies
+          # OVERWRITE the default counter app with YOUR custom code
+          cp temp_code/main.dart lib/main.dart
+          cp temp_code/pubspec.yaml pubspec.yaml
+          
           flutter pub get
 
-      - name: 4. Compile APK
+      - name: 4. Build
         run: flutter build apk --release
 
-      - name: 5. Store APK
+      - name: 5. Upload
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
