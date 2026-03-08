@@ -1,39 +1,45 @@
 name: build
 on:
   workflow_dispatch:
+
 jobs:
   apk:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: 1. Checkout Code
         uses: actions/checkout@v4
-      - name: Java
+
+      - name: 2. Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
-      - name: Flutter
+
+      - name: 3. Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          
-      - name: CLEAN_REPAIR_BUILD
+
+      - name: 4. Clean and Repair Project
+        # This step fixes the "Task not found" and "flutterRoot" errors
         run: |
-          # 1. Clean up any existing broken files
-          rm -rf android .gitignore pubspec.yaml
+          # Remove any existing broken android files
+          rm -rf android .gitignore pubspec.lock
           
-          # 2. Recreate the project perfectly with YOUR package name
-          # Change "com.royal.event" below if you want a different default
-          flutter create . --org com.royal --project-name my_cloud_compiler --platforms android --overwrite
+          # Recreate the android project structure perfectly
+          # --org sets your package name (com.royal)
+          flutter create . --org com.royal --platforms android --overwrite
           
-          # 3. Pull your custom code (main.dart) into the fresh project
-          # Note: The 'checkout' step already pulled your latest 'lib/main.dart'
-          
+          # Get dependencies
           flutter pub get
-          flutter build apk --release
-          
-      - name: Upload
+
+      - name: 5. Build Release APK
+        # Added --verbose to help us see exactly what happens if it fails
+        run: flutter build apk --release --verbose
+
+      - name: 6. Upload Result
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: "build/app/outputs/flutter-apk/*.apk"
+          if-no-files-found: error
