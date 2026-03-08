@@ -1,14 +1,9 @@
-name: royal_event
-description: A new Flutter project.
-publish_to: 'none'
-
+name: my_cloud_compiler
 environment:
   sdk: '>=3.11.0 <4.0.0'
-
 dependencies:
   flutter:
     sdk: flutter
   http: ^1.1.0
-
 flutter:
   uses-material-design: true
