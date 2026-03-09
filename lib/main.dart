@@ -38,7 +38,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
       _todos.add(TodoItem(title: _controller.text.trim()));
       _controller.clear();
     });
-  }y
+  }
 
   void _toggleTodo(int index) {
     setState(() {
